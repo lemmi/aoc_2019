@@ -20,10 +20,10 @@ fn fuelfuel(mass: i32) -> i32 {
 }
 
 fn star1() -> io::Result<i32> {
-    Ok(lines("input")?.map(fuel).sum())
+    Ok(lines("input")?.map(|l| l.parse().unwrap()).map(fuel).sum())
 }
 fn star2() -> io::Result<i32> {
-    Ok(lines("input")?.map(fuelfuel).sum())
+    Ok(lines("input")?.map(|l| l.parse().unwrap()).map(fuelfuel).sum())
 }
 
 fn main() -> io::Result<()> {
