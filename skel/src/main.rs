@@ -15,3 +15,8 @@ fn main() -> Result<(), Box<Error>> {
     println!("Star 02: {}", star2()?);
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+}
