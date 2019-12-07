@@ -51,12 +51,13 @@ impl From<(isize, isize)> for Point<isize> {
 pub mod intcode {
     use std::error::Error;
     use std::str::FromStr;
+    use std::sync::mpsc;
 
     pub struct Intcode {
         mem: Vec<isize>,
         pc: isize,
-        input: isize,
-        output: Vec<isize>,
+        input: mpsc::Receiver<isize>,
+        output: mpsc::Sender<isize>,
     }
 
     impl Intcode {
@@ -108,12 +109,12 @@ pub mod intcode {
                     None
                 },
                 (3, _, _, _) => {
-                    *self.ind_mut(1) = self.input;
+                    *self.ind_mut(1) = self.input.recv().unwrap();
                     self.pc += 2;
                     None
                 },
                 (4, p1, _, _) => {
-                    self.output.push(self.param(1,p1));
+                    self.output.send(self.param(1,p1)).unwrap();
                     self.pc += 2;
                     None
                 },
@@ -153,12 +154,28 @@ pub mod intcode {
                 }
             }
         }
-        pub fn run_input(&mut self, input: isize) -> Result<&[isize], Box<Error>> {
+        pub fn run_channel(&mut self, input: mpsc::Receiver<isize>, output: mpsc::Sender<isize>) {
             self.input = input;
+            self.output = output;
             loop {
                 match self.step() {
                     None => (),
-                    Some(_) => return Ok(&self.output),
+                    Some(_) => return,
+                }
+            }
+        }
+        pub fn run_input(&mut self, input: &[isize]) -> Result<Vec<isize>, Box<Error>> {
+            let (si, ri) = mpsc::channel();
+            let (so, ro) = mpsc::channel();
+            self.input = ri;
+            self.output = so;
+            for i in input {
+                si.send(*i)?;
+            }
+            loop {
+                match self.step() {
+                    None => (),
+                    Some(_) => return Ok(ro.try_iter().collect())
                 }
             }
         }
@@ -172,11 +189,12 @@ pub mod intcode {
         type Err = Box<Error>;
         fn from_str(src: &str) -> Result<Self, Self::Err> {
             let mem: Result<Vec<isize>, _> = src.split(",").map(|n| n.parse()).collect();
+            let (s,r) = mpsc::channel();
             Ok(Intcode {
                 mem: mem?,
                 pc: 0,
-                input: 0,
-                output: Vec::new(),
+                input: r,
+                output: s,
             })
         }
     }
