@@ -56,65 +56,65 @@ pub mod intcode {
     pub struct Intcode {
         mem: Vec<isize>,
         pc: isize,
+        base: isize,
         input: mpsc::Receiver<isize>,
         output: mpsc::Sender<isize>,
     }
 
     impl Intcode {
-        pub fn op(&self) -> (isize, isize, isize, isize) {
+        fn op(&self) -> (isize, isize, isize, isize) {
             let op = self.mem[self.pc as usize + 0] as isize;
             (op % 100, op / 100 % 10, op / 1000 % 10, op / 10000 % 10)
-        }
-        pub fn src1(&self) -> isize {
-            self.ind(1)
-        }
-        pub fn src2(&self) -> isize {
-            self.ind(2)
-        }
-        pub fn dst(&mut self) -> &mut isize {
-            self.ind_mut(3)
-        }
-        pub fn dir(&self, off: isize) -> isize {
-            self.mem[off as usize]
-        }
-        pub fn dir_mut(&mut self, off: isize) -> &mut isize {
-            &mut self.mem[off as usize]
-        }
-        pub fn ind(&self, off: isize) -> isize {
-            self.mem[self.mem[(self.pc + off) as usize] as usize]
         }
         pub fn ind_mut(&mut self, off: isize) -> &mut isize {
             let idx = self.mem[(self.pc + off) as usize] as usize;
             &mut self.mem[idx]
         }
-        pub fn param(&self, off: isize, mode: isize) -> isize {
-            let imm = self.mem[(self.pc + off) as usize];
-            match mode {
-                0 => self.mem[imm as usize],
-                1 => imm,
-                x => panic!("unkown parameter mode {}", x),
+        pub fn param_addr(&mut self, off: isize, mode: isize) -> usize {
+            let immaddr = (self.pc + off) as usize;
+            if immaddr >= self.mem.len() {
+                self.mem.resize(immaddr+1,0);
             }
+            let addr = match mode {
+                0 => self.mem[immaddr] as usize,
+                1 => immaddr,
+                2 => (self.mem[immaddr] + self.base) as usize,
+                x => panic!("unknown parameter mode {}", x),
+            };
+            if addr >= self.mem.len() {
+                self.mem.resize(addr+1,0);
+            }
+            addr
+        }
+        pub fn param(&mut self, off: isize, mode: isize) -> isize {
+            let addr = self.param_addr(off,mode);
+            self.mem[addr]
+        }
+        pub fn param_mut(&mut self, off: isize, mode: isize) -> &mut isize {
+            let addr = self.param_addr(off,mode);
+            &mut self.mem[addr]
         }
         pub fn step(&mut self) -> Option<isize> {
             //println!("{:?}", &self.mem[self.pc as usize .. self.pc as usize + 4]);
             match self.op() {
-                (1, p1, p2, _) => {
-                    *self.ind_mut(3) = self.param(1, p1) + self.param(2, p2);
+                (1, p1, p2, p3) => {
+                    *self.param_mut(3,p3) = self.param(1, p1) + self.param(2, p2);
                     self.pc += 4;
                     None
                 },
-                (2, p1, p2, _) => {
-                    *self.ind_mut(3) = self.param(1, p1) * self.param(2, p2);
+                (2, p1, p2, p3) => {
+                    *self.param_mut(3, p3) = self.param(1, p1) * self.param(2, p2);
                     self.pc += 4;
                     None
                 },
-                (3, _, _, _) => {
-                    *self.ind_mut(1) = self.input.recv().unwrap();
+                (3, p1, _, _) => {
+                    *self.param_mut(1,p1) = self.input.recv().unwrap();
                     self.pc += 2;
                     None
                 },
                 (4, p1, _, _) => {
-                    self.output.send(self.param(1,p1)).unwrap();
+                    let data = self.param(1,p1);
+                    self.output.send(data).unwrap();
                     self.pc += 2;
                     None
                 },
@@ -132,14 +132,19 @@ pub mod intcode {
                     }
                     None
                 },
-                (7, p1, p2, _) => {
-                    *self.ind_mut(3) = (self.param(1,p1) < self.param(2,p2)) as isize;
+                (7, p1, p2, p3) => {
+                    *self.param_mut(3,p3) = (self.param(1,p1) < self.param(2,p2)) as isize;
                     self.pc += 4;
                     None
                 },
-                (8, p1, p2, _) => {
-                    *self.ind_mut(3) = (self.param(1,p1) == self.param(2,p2)) as isize;
+                (8, p1, p2, p3) => {
+                    *self.param_mut(3,p3) = (self.param(1,p1) == self.param(2,p2)) as isize;
                     self.pc += 4;
+                    None
+                },
+                (9, p1, _, _) => {
+                    self.base += self.param(1,p1) as isize;
+                    self.pc += 2;
                     None
                 },
                 (99, _, _, _) => Some(self.mem[0]),
@@ -157,6 +162,7 @@ pub mod intcode {
         pub fn run_channel(&mut self, input: mpsc::Receiver<isize>, output: mpsc::Sender<isize>) {
             self.input = input;
             self.output = output;
+            self.base = 0;
             loop {
                 match self.step() {
                     None => (),
@@ -169,6 +175,7 @@ pub mod intcode {
             let (so, ro) = mpsc::channel();
             self.input = ri;
             self.output = so;
+            self.base = 0;
             for i in input {
                 si.send(*i)?;
             }
@@ -193,6 +200,7 @@ pub mod intcode {
             Ok(Intcode {
                 mem: mem?,
                 pc: 0,
+                base: 0,
                 input: r,
                 output: s,
             })
