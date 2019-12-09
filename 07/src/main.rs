@@ -16,7 +16,7 @@ fn star1() -> Result<isize, Box<Error>> {
         let mut input = 0;
         for phase in phases {
             let mut amp = Intcode::from_str(&code)?;
-            input = amp.run_input(&[phase, input])?.recv()?;
+            input = *amp.run_input(&[phase, input])?.last().unwrap();
         }
 
         if input > max {
@@ -81,9 +81,4 @@ fn main() -> Result<(), Box<Error>> {
     println!("Star 01: {}", star1()?);
     println!("Star 02: {}", star2()?);
     Ok(())
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
 }
