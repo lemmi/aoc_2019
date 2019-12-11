@@ -1,0 +1,9 @@
+[package]
+name = "aoc_2019"
+version = "0.1.0"
+authors = ["lemmi <lemmi@nerd2nerd.org>"]
+edition = "2018"
+
+[dependencies]
+aoc2019 = { path = "../aoc2019" }
+itertools = "0.8.2"
