@@ -48,6 +48,19 @@ impl From<(isize, isize)> for Point<isize> {
     }
 }
 
+pub fn gcd(a: isize, b: isize) -> isize {
+    let a = a.abs();
+    let b = b.abs();
+    if b == 0 {
+        return a;
+    }
+    gcd(b, a % b)
+}
+
+pub fn lcm(a:isize,b:isize) -> isize {
+    (a*b).abs() / gcd(a,b)
+}
+
 pub mod intcode {
     use std::error::Error;
     use std::str::FromStr;
@@ -78,6 +91,13 @@ pub mod intcode {
                 State::Halt(t,_) => t,
             }
         }
+        pub fn is_halt(&self) -> bool {
+            match self {
+                State::Wait(_) => false,
+                State::Halt(_,_) => true,
+            }
+        }
+
     }
 
     impl Intcode {
@@ -113,7 +133,7 @@ pub mod intcode {
             let addr = self.param_addr(off,mode);
             &mut self.mem[addr]
         }
-        fn step(&mut self, input: &mut Iterator<Item = isize>) -> InstrState {
+        fn step(&mut self, input: &mut dyn Iterator<Item = isize>) -> InstrState {
             match self.op() {
                 (1, p1, p2, p3) => {
                     *self.param_mut(3,p3) = self.param(1, p1) + self.param(2, p2);
@@ -172,7 +192,7 @@ pub mod intcode {
                 (x, _, _, _) => panic!("Invalid opcode {}, pc: {}", x, self.pc),
             }
         }
-        pub fn run(&mut self) -> Result<isize, Box<Error>> {
+        pub fn run(&mut self) -> Result<isize, Box<dyn Error>> {
             loop {
                 match self.step(&mut std::iter::empty()) {
                     InstrState::Run => (),
@@ -196,14 +216,19 @@ pub mod intcode {
                 }
             }
         }
-
         pub fn set(&mut self, noun: isize, verb: isize) {
             self.mem[1] = noun;
             self.mem[2] = verb;
         }
+        pub fn mem(&mut self, idx: usize) -> &mut isize {
+            &mut self.mem[idx]
+        }
+        pub fn from_file(f: &str) -> Result<Self, Box<dyn Error>> {
+            super::lines(f)?.next().ok_or("no code available".to_string())?.parse()
+        }
     }
     impl FromStr for Intcode {
-        type Err = Box<Error>;
+        type Err = Box<dyn Error>;
         fn from_str(src: &str) -> Result<Self, Self::Err> {
             let mem: Result<Vec<isize>, _> = src.split(",").map(|n| n.parse()).collect();
             Ok(Intcode {

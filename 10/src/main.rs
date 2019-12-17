@@ -1,4 +1,4 @@
-use aoc2019::lines;
+use aoc2019::{lines,gcd};
 use std::collections::HashMap;
 use std::error::Error;
 
@@ -17,15 +17,6 @@ fn read_map(filename: &str) -> Result<Asteroids, Box<Error>> {
     }
 
     Ok(v)
-}
-
-fn gcd(a: isize, b: isize) -> isize {
-    let a = a.abs();
-    let b = b.abs();
-    if b == 0 {
-        return a;
-    }
-    gcd(b, a % b)
 }
 
 fn reduce((a, b): Loc) -> Loc {
