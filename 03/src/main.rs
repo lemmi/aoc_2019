@@ -17,7 +17,7 @@ impl FromStr for Wire {
         w.segments.push(Point::new(0,0));
 
         for v in s.split(",") {
-            let s: Box<Iterator<Item = (_,_)>> = match (&v[..1], (&v[1..]).parse::<isize>()?) {
+            let s: Box<dyn Iterator<Item = (_,_)>> = match (&v[..1], (&v[1..]).parse::<isize>()?) {
                 ("R", x) => Box::new(( 1..=x).map(|x| (0,  x))),
                 ("L", x) => Box::new(( 1..=x).map(|x| (0, -x))),
                 ("U", x) => Box::new(( 1..=x).map(|x| (-x, 0))),

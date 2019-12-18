@@ -15,7 +15,7 @@ fn star1() -> Result<isize, Box<dyn Error>> {
         let mut input = 0;
         for phase in phases {
             let mut amp = Intcode::from_str(&code)?;
-            input = amp.run_input(&[phase, input]).out().pop().unwrap();
+            input = *amp.run_input(&[phase, input]).out().last().unwrap();
         }
 
         if input > max {
