@@ -15,7 +15,7 @@ fn pattern_range(l: usize, e: usize, s: usize) -> Vec<(Range<usize>, i32)> {
         }
         ret.push((start..end.min(l - s), sign));
         sign *= -1;
-        if end > l - s{
+        if end > l - s {
             break;
         }
     }
@@ -72,9 +72,14 @@ fn star1() -> Result<i32, Box<dyn Error>> {
 }
 
 fn phase2(v: &[i32]) -> Vec<i32> {
-    let mut ret: Vec<i32> = v.iter().rev()
-        .scan(0, |sum, &x| { *sum += x;Some(*sum)})
-        .map(|d| (d%10).abs())
+    let mut ret: Vec<i32> = v
+        .iter()
+        .rev()
+        .scan(0, |sum, &x| {
+            *sum += x;
+            Some(*sum)
+        })
+        .map(|d| (d % 10).abs())
         .collect();
     ret.reverse();
     ret
@@ -89,9 +94,9 @@ fn star2() -> Result<i32, Box<dyn Error>> {
     let ps = patterns(l, off);
     for p in &ps {
         assert!(p.len() == 1);
-        let (r,sgn) = &p[0];
+        let (r, sgn) = &p[0];
         assert!(*sgn == 1);
-        assert!(r.end == l-off);
+        assert!(r.end == l - off);
     }
 
     let v: Vec<i32> = v.iter().cycle().take(l).skip(off).cloned().collect();

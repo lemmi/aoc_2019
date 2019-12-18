@@ -1,7 +1,7 @@
-use aoc2019::lines;
 use aoc2019::intcode::Intcode;
-use std::str::FromStr;
+use aoc2019::lines;
 use std::error::Error;
+use std::str::FromStr;
 
 fn star1() -> Result<isize, Box<dyn Error>> {
     let prog = lines("input")?.next().unwrap();
@@ -25,24 +25,37 @@ mod test {
     use super::*;
 
     #[test]
-    fn relquine() -> Result<(),Box<dyn Error>> {
+    fn relquine() -> Result<(), Box<dyn Error>> {
         assert_eq!(
-            vec![109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99],
-            *Intcode::from_str("109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99")?.run_input(&[]).out());
+            vec![109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99],
+            *Intcode::from_str("109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99")?
+                .run_input(&[])
+                .out()
+        );
         Ok(())
     }
     #[test]
-    fn relmul() -> Result<(),Box<dyn Error>> {
+    fn relmul() -> Result<(), Box<dyn Error>> {
         assert_eq!(
             1219070632396864,
-            *Intcode::from_str("1102,34915192,34915192,7,4,7,99,0")?.run_input(&[]).out().last().unwrap());
+            *Intcode::from_str("1102,34915192,34915192,7,4,7,99,0")?
+                .run_input(&[])
+                .out()
+                .last()
+                .unwrap()
+        );
         Ok(())
     }
     #[test]
-    fn rellarge() -> Result<(),Box<dyn Error>> {
+    fn rellarge() -> Result<(), Box<dyn Error>> {
         assert_eq!(
             1125899906842624,
-            *Intcode::from_str("104,1125899906842624,99")?.run_input(&[]).out().last().unwrap());
+            *Intcode::from_str("104,1125899906842624,99")?
+                .run_input(&[])
+                .out()
+                .last()
+                .unwrap()
+        );
         Ok(())
     }
 }

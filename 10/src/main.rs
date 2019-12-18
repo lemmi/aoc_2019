@@ -1,4 +1,4 @@
-use aoc2019::{lines,gcd};
+use aoc2019::{gcd, lines};
 use std::collections::HashMap;
 use std::error::Error;
 
@@ -34,7 +34,7 @@ fn los(asteroids: &Asteroids, base: &Loc) -> HashMap<Loc, Asteroids> {
         .for_each(|(r, b)| alos.entry(r).or_insert(Vec::new()).push(b));
 
     for val in alos.values_mut() {
-        val.sort_by_key(|(x, y)| x*x + y*y)
+        val.sort_by_key(|(x, y)| x * x + y * y)
     }
 
     alos
@@ -70,8 +70,8 @@ fn star2() -> Result<isize, Box<dyn Error>> {
     let mut shot = 0;
     let mut last;
     'outer: loop {
-        let mut keys:Vec<_> = alos.keys().cloned().collect();
-        keys.sort_by(|a,b| angle(a).partial_cmp(&angle(b)).unwrap());
+        let mut keys: Vec<_> = alos.keys().cloned().collect();
+        keys.sort_by(|a, b| angle(a).partial_cmp(&angle(b)).unwrap());
         for k in keys {
             last = alos.get_mut(&k).unwrap().pop();
             shot += 1;
@@ -81,12 +81,12 @@ fn star2() -> Result<isize, Box<dyn Error>> {
             }
             //println!("{} {:?}: {:?}", angle(&k), k, v);
         }
-        alos.retain(|_,v| v.len() > 0);
+        alos.retain(|_, v| v.len() > 0);
     }
     let last = last.unwrap();
     let last = (last.0 + base.0, last.1 + base.1);
     println!("last: {:?}", last);
-    Ok(last.0*100 + last.1)
+    Ok(last.0 * 100 + last.1)
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -112,5 +112,4 @@ mod test {
         assert!(angle(&(0, -1)) < angle(&(0, 1)));
         assert!(angle(&(0, -1)) < angle(&(-1, 0)));
     }
-
 }

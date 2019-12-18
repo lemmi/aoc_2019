@@ -1,9 +1,9 @@
-use aoc2019::{lines,intcode::Intcode};
+use aoc2019::{intcode::Intcode, lines};
 use std::error::Error;
 
 fn star1() -> Result<isize, Box<dyn Error>> {
     let mut ic = lines("input")?.next().unwrap().parse::<Intcode>()?;
-    ic.set(12,2);
+    ic.set(12, 2);
     ic.run()
 }
 
@@ -11,10 +11,10 @@ fn star2() -> Result<isize, Box<dyn Error>> {
     for verb in 0..100 {
         for noun in 0..100 {
             let mut ic = lines("input")?.next().unwrap().parse::<Intcode>()?;
-            ic.set(noun,verb);
+            ic.set(noun, verb);
             let res = ic.run()?;
             if res == 19690720 {
-                return Ok(100*noun + verb)
+                return Ok(100 * noun + verb);
             }
         }
     }

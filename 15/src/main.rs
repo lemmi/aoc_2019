@@ -1,20 +1,32 @@
-use aoc2019::lines;
 use aoc2019::intcode::Intcode;
-use std::str::FromStr;
-use std::error::Error;
+use aoc2019::lines;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
+use std::error::Error;
+use std::str::FromStr;
 
-#[derive(Copy,Clone,PartialEq,Eq,Hash,Debug,Default)]
-struct Loc (isize, isize);
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Default)]
+struct Loc(isize, isize);
 impl Loc {
-    fn dir(&self, dir:isize) -> Self {
+    fn dir(&self, dir: isize) -> Self {
         match dir {
-            1 => Loc{0: self.0,  1: self.1-1},
-            2 => Loc{0: self.0,  1: self.1+1},
-            3 => Loc{0: self.0-1,1: self.1},
-            4 => Loc{0: self.0+1,1: self.1},
+            1 => Loc {
+                0: self.0,
+                1: self.1 - 1,
+            },
+            2 => Loc {
+                0: self.0,
+                1: self.1 + 1,
+            },
+            3 => Loc {
+                0: self.0 - 1,
+                1: self.1,
+            },
+            4 => Loc {
+                0: self.0 + 1,
+                1: self.1,
+            },
             x => panic!("unknown direction {}", x),
         }
     }
@@ -30,7 +42,7 @@ fn reverse(dir: isize) -> isize {
     }
 }
 
-#[derive(Clone,Debug,Default,PartialEq,Eq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 struct WayPoint {
     loc: Loc,
     neigh: Vec<isize>,
@@ -45,7 +57,7 @@ impl WayPoint {
     }
 }
 
-#[derive(Debug,Default)]
+#[derive(Debug, Default)]
 struct Map(HashMap<Loc, WayPoint>);
 
 struct Robot {
@@ -55,10 +67,10 @@ struct Robot {
 }
 
 impl Robot {
-    fn from_file(f: &str) -> Result<Self,Box<dyn Error>> {
+    fn from_file(f: &str) -> Result<Self, Box<dyn Error>> {
         let mut map = Map::default();
         map.0.insert(Loc::default(), WayPoint::default());
-        Ok(Robot{
+        Ok(Robot {
             ic: Intcode::from_str(&lines(f)?.next().unwrap())?,
             path: Vec::new(),
             map: map,
@@ -130,11 +142,11 @@ impl Robot {
                 parent_dir: reverse(neigh),
             };
 
-            self.map.0.insert(nloc,wp);
+            self.map.0.insert(nloc, wp);
             queue.push(nloc);
         }
         //println!("Robot after explore: {:?}", self.pos());
-        self.map.0.get_mut(&self.pos()).unwrap().neigh=neighs;
+        self.map.0.get_mut(&self.pos()).unwrap().neigh = neighs;
         self.follow_path_rev(&path);
 
         queue
@@ -153,7 +165,7 @@ impl Robot {
 
         let mut m = Vec::new();
         for _ in miny..maxy {
-            m.push(vec![' '; (maxx-minx) as usize])
+            m.push(vec![' '; (maxx - minx) as usize])
         }
 
         for (k, wp) in &self.map.0 {
@@ -206,7 +218,7 @@ fn star2() -> Result<usize, Box<dyn Error>> {
     }
 
     let oxyloc = r.map.0.values().find(|wp| wp.oxygen).unwrap().loc;
-    
+
     r.print_map();
 
     Ok(flood(r.map.0.keys().cloned().collect(), oxyloc))

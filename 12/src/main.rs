@@ -1,12 +1,12 @@
-use aoc2019::{lines,lcm};
+use aoc2019::{lcm, lines};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::error::Error;
+use std::hash::{Hash, Hasher};
 use std::ops::Add;
 use std::ops::Neg;
 use std::ops::Not;
 use std::ops::Sub;
-use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Eq, Default, Clone, Copy, Hash)]
@@ -122,7 +122,7 @@ impl Moon {
     fn energy(&self) -> isize {
         self.p.energy() * self.v.energy()
     }
-    fn dim(&self, dim: usize) -> (isize,isize) {
+    fn dim(&self, dim: usize) -> (isize, isize) {
         (
             [self.p.0, self.p.1, self.p.2][dim],
             [self.v.0, self.v.1, self.v.2][dim],
@@ -164,8 +164,8 @@ fn parse_moons(filename: &str) -> Result<Vec<Moon>, Box<dyn Error>> {
         .collect::<Result<Vec<_>, _>>()
 }
 
-fn state_in_dim(moons: &[Moon], dim: usize) -> Vec<(isize,isize)> {
-    moons .into_iter() .map(|m| m.dim(dim)) .collect()
+fn state_in_dim(moons: &[Moon], dim: usize) -> Vec<(isize, isize)> {
+    moons.into_iter().map(|m| m.dim(dim)).collect()
 }
 
 fn star1() -> Result<isize, Box<dyn Error>> {
@@ -184,7 +184,7 @@ fn find_period(moons: &[Moon], dim: usize) -> (isize, isize) {
 
     for i in 0.. {
         if let Some(d) = statedim.insert(state_in_dim(&moons, dim), i) {
-            return (d,i-d)
+            return (d, i - d);
         }
         step(&mut moons);
     }
@@ -202,7 +202,7 @@ fn star2() -> Result<isize, Box<dyn Error>> {
     println!("y: {:?}", py);
     println!("z: {:?}", pz);
 
-    Ok(lcm(lcm(px.1,py.1), pz.1))
+    Ok(lcm(lcm(px.1, py.1), pz.1))
 }
 
 fn main() -> Result<(), Box<dyn Error>> {

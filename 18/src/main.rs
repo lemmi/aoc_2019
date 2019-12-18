@@ -1,12 +1,12 @@
 use aoc2019::lines;
-use std::error::Error;
-use std::collections::VecDeque;
-use std::collections::HashSet;
 use std::collections::HashMap;
+use std::collections::HashSet;
+use std::collections::VecDeque;
+use std::error::Error;
 
 type Key = u8;
 
-#[derive(Eq,PartialEq,Debug,Clone)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 enum Tile {
     Wall,
     Hall,
@@ -33,31 +33,41 @@ impl From<char> for Tile {
             '@' => Self::Robot,
             x if x.is_ascii_lowercase() => Self::Key(x as u8 - 'a' as u8),
             x if x.is_ascii_uppercase() => Self::Door(x as u8 - 'A' as u8),
-            x => panic!("unkown tile {}",x),
+            x => panic!("unkown tile {}", x),
         }
     }
 }
 
 impl std::fmt::Display for Tile {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", match self {
-            Self::Wall => String::from("██"),
-            Self::Hall => String::from("  "),
-            Self::Robot => String::from("@@"),
-            Self::Key(k) => { let c = k + 'a' as u8; String::from_utf8(vec![c,c]).unwrap() }
-            Self::Door(d) => { let c = d + 'A' as u8; String::from_utf8(vec![c,c]).unwrap() }
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Wall => String::from("██"),
+                Self::Hall => String::from("  "),
+                Self::Robot => String::from("@@"),
+                Self::Key(k) => {
+                    let c = k + 'a' as u8;
+                    String::from_utf8(vec![c, c]).unwrap()
+                }
+                Self::Door(d) => {
+                    let c = d + 'A' as u8;
+                    String::from_utf8(vec![c, c]).unwrap()
+                }
+            }
+        )
     }
 }
 
-#[derive(Copy,Clone,Debug,Eq,PartialEq,Hash,Default)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Default)]
 struct KeySet(u32);
 impl KeySet {
     fn insert(&self, k: Key) -> KeySet {
-        KeySet(self.0 | 1<<k)
+        KeySet(self.0 | 1 << k)
     }
     fn contains(&self, k: Key) -> bool {
-        (self.0 & 1<<k) > 0
+        (self.0 & 1 << k) > 0
     }
 }
 impl std::fmt::Display for KeySet {
@@ -76,7 +86,7 @@ fn fmt_line(l: &[Tile]) -> String {
     l.iter().map(|t| t.to_string()).collect()
 }
 
-#[derive(Copy,Clone,Debug,Eq,PartialEq,Hash,PartialOrd,Ord)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, PartialOrd, Ord)]
 struct Pos {
     x: usize,
     y: usize,
@@ -85,23 +95,41 @@ struct Pos {
 impl Pos {
     fn neighs(&self, m: &Map, k: KeySet) -> Vec<Pos> {
         [
-            Pos{ x: self.x - 1, y: self.y, },
-            Pos{ x: self.x + 1, y: self.y, },
-            Pos{ x: self.x, y: self.y - 1, },
-            Pos{ x: self.x, y: self.y + 1, },
-        ].iter().filter(|p| m[p.y][p.x].is_free(k)).cloned().collect()
+            Pos {
+                x: self.x - 1,
+                y: self.y,
+            },
+            Pos {
+                x: self.x + 1,
+                y: self.y,
+            },
+            Pos {
+                x: self.x,
+                y: self.y - 1,
+            },
+            Pos {
+                x: self.x,
+                y: self.y + 1,
+            },
+        ]
+        .iter()
+        .filter(|p| m[p.y][p.x].is_free(k))
+        .cloned()
+        .collect()
     }
 }
 
 type Map = Vec<Vec<Tile>>;
-fn map_from_file(f: &str) -> Result<Map,Box<dyn Error>> {
-    Ok(lines(f)?.map(|l| l.chars().map(|c| Tile::from(c)).collect::<Vec<Tile>>()).collect::<Map>())
+fn map_from_file(f: &str) -> Result<Map, Box<dyn Error>> {
+    Ok(lines(f)?
+        .map(|l| l.chars().map(|c| Tile::from(c)).collect::<Vec<Tile>>())
+        .collect::<Map>())
 }
 
 fn find_bot(m: &Map) -> Pos {
-    for (y,l) in m.iter().enumerate() {
+    for (y, l) in m.iter().enumerate() {
         if let Some(x) = l.iter().position(|t| *t == Tile::Robot) {
-            return Pos{x,y}
+            return Pos { x, y };
         }
     }
     panic!("no bot found!")
@@ -111,33 +139,38 @@ fn search(m: &Map) -> usize {
     let r = find_bot(m);
     let goal = all_keys(m);
     bfs(m, r, KeySet::default(), goal, &mut HashMap::new())
-} 
-fn bfs(m: &Map, from: Pos, keys: KeySet, goal: KeySet, cache: &mut HashMap<(Pos,KeySet),usize>) -> usize {
+}
+fn bfs(
+    m: &Map,
+    from: Pos,
+    keys: KeySet,
+    goal: KeySet,
+    cache: &mut HashMap<(Pos, KeySet), usize>,
+) -> usize {
     if keys == goal {
-        return 0
+        return 0;
     }
 
     let mut queue = VecDeque::new();
     let mut visited = HashSet::new();
-    queue.push_back((from,0));
-
+    queue.push_back((from, 0));
 
     let mut ret = std::usize::MAX;
-    while let Some((p,d)) = queue.pop_front() {
+    while let Some((p, d)) = queue.pop_front() {
         visited.insert(p);
         if let Tile::Key(k) = m[p.y][p.x] {
             if !keys.contains(k) {
                 let nkeys = keys.insert(k);
-                let s = match cache.get(&(p,nkeys)) {
+                let s = match cache.get(&(p, nkeys)) {
                     Some(s) => *s,
                     None => {
                         let s = bfs(m, p, keys.insert(k), goal, cache);
-                        cache.insert((p,nkeys),s);
+                        cache.insert((p, nkeys), s);
                         s
                     }
                 };
-                ret = ret.min(d+s);
-                continue
+                ret = ret.min(d + s);
+                continue;
             }
         }
 
@@ -145,7 +178,7 @@ fn bfs(m: &Map, from: Pos, keys: KeySet, goal: KeySet, cache: &mut HashMap<(Pos,
             if visited.contains(&neigh) {
                 continue;
             }
-            queue.push_back((neigh, d+1));
+            queue.push_back((neigh, d + 1));
         }
     }
     ret
@@ -157,26 +190,44 @@ fn qsearch(m: &Map) -> usize {
     let goal = all_keys(&m);
 
     m[r.y][r.x] = Tile::Wall;
-    m[r.y-1][r.x] = Tile::Wall;
-    m[r.y+1][r.x] = Tile::Wall;
-    m[r.y][r.x-1] = Tile::Wall;
-    m[r.y][r.x+1] = Tile::Wall;
+    m[r.y - 1][r.x] = Tile::Wall;
+    m[r.y + 1][r.x] = Tile::Wall;
+    m[r.y][r.x - 1] = Tile::Wall;
+    m[r.y][r.x + 1] = Tile::Wall;
 
     let r = vec![
-        Pos{x: r.x - 1, y: r.y - 1},
-        Pos{x: r.x - 1, y: r.y + 1},
-        Pos{x: r.x + 1, y: r.y - 1},
-        Pos{x: r.x + 1, y: r.y + 1},
+        Pos {
+            x: r.x - 1,
+            y: r.y - 1,
+        },
+        Pos {
+            x: r.x - 1,
+            y: r.y + 1,
+        },
+        Pos {
+            x: r.x + 1,
+            y: r.y - 1,
+        },
+        Pos {
+            x: r.x + 1,
+            y: r.y + 1,
+        },
     ];
 
     if cfg!(test) {
-        debug_state(&m, &r, &HashSet::new(), KeySet::default(), 0 );
+        debug_state(&m, &r, &HashSet::new(), KeySet::default(), 0);
     }
     qbfs(&m, r, KeySet::default(), goal, &mut HashMap::new())
-} 
-fn qbfs(m: &Map, mut froms: Vec<Pos>, keys: KeySet, goal: KeySet, cache: &mut HashMap<(Vec<Pos>, KeySet), usize>) -> usize {
+}
+fn qbfs(
+    m: &Map,
+    mut froms: Vec<Pos>,
+    keys: KeySet,
+    goal: KeySet,
+    cache: &mut HashMap<(Vec<Pos>, KeySet), usize>,
+) -> usize {
     if keys == goal {
-        return 0
+        return 0;
     }
 
     let mut ret = std::usize::MAX;
@@ -184,7 +235,7 @@ fn qbfs(m: &Map, mut froms: Vec<Pos>, keys: KeySet, goal: KeySet, cache: &mut Ha
         let mut queue = VecDeque::new();
         let mut visited = HashSet::new();
         queue.push_back((froms[0], 0));
-        while let Some((p,d)) = queue.pop_front() {
+        while let Some((p, d)) = queue.pop_front() {
             //debug_state(m, &froms, &visited, keys, d );
             //println!("{:?}", froms);
             visited.insert(p);
@@ -194,16 +245,16 @@ fn qbfs(m: &Map, mut froms: Vec<Pos>, keys: KeySet, goal: KeySet, cache: &mut Ha
                     let nkeys = keys.insert(k);
                     let mut nfroms = vec![p, froms[1], froms[2], froms[3]];
                     nfroms.sort();
-                    let s = match cache.get(&(nfroms.clone(),nkeys)) {
+                    let s = match cache.get(&(nfroms.clone(), nkeys)) {
                         Some(s) => *s,
                         None => {
                             let s = qbfs(m, nfroms.clone(), keys.insert(k), goal, cache);
-                            cache.insert((nfroms,nkeys),s);
+                            cache.insert((nfroms, nkeys), s);
                             s
                         }
                     };
-                    ret = ret.min(d+s);
-                    continue
+                    ret = ret.min(d + s);
+                    continue;
                 }
             }
 
@@ -211,9 +262,8 @@ fn qbfs(m: &Map, mut froms: Vec<Pos>, keys: KeySet, goal: KeySet, cache: &mut Ha
                 if visited.contains(&neigh) {
                     continue;
                 }
-                queue.push_back((neigh, d+1));
+                queue.push_back((neigh, d + 1));
             }
-
         }
 
         froms.rotate_left(1);
@@ -230,16 +280,16 @@ fn print_state(m: &Map) {
 fn debug_state(m: &Map, r: &[Pos], v: &HashSet<Pos>, keys: KeySet, d: usize) {
     for (y, l) in m.iter().enumerate() {
         for (x, t) in l.iter().enumerate() {
-            let p = Pos{x,y};
+            let p = Pos { x, y };
 
             if r.iter().any(|r| *r == p) {
-                print!("{}",Tile::Robot);
+                print!("{}", Tile::Robot);
             } else if v.contains(&p) {
                 print!("░░");
             } else if *t == Tile::Robot {
-                print!("{}",Tile::Hall);
+                print!("{}", Tile::Hall);
             } else {
-                print!("{}",t)
+                print!("{}", t)
             }
         }
         println!();
@@ -250,9 +300,17 @@ fn debug_state(m: &Map, r: &[Pos], v: &HashSet<Pos>, keys: KeySet, d: usize) {
     println!();
     std::thread::sleep(std::time::Duration::from_millis(10));
 }
-    
+
 fn all_keys(m: &Map) -> KeySet {
-    m.iter().flat_map(|l| l.iter()).fold(KeySet::default(), |set, t| if let Tile::Key(k) = t { set.insert(*k) } else { set })
+    m.iter()
+        .flat_map(|l| l.iter())
+        .fold(KeySet::default(), |set, t| {
+            if let Tile::Key(k) = t {
+                set.insert(*k)
+            } else {
+                set
+            }
+        })
 }
 
 fn star1() -> Result<usize, Box<dyn Error>> {
@@ -276,7 +334,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn t1() -> Result<(), Box<dyn Error>>{
+    fn t1() -> Result<(), Box<dyn Error>> {
         let m = map_from_file("test1")?;
         print_state(&m);
         assert_eq!(132, search(&m));
@@ -284,7 +342,7 @@ mod test {
     }
 
     #[test]
-    fn t2() -> Result<(), Box<dyn Error>>{
+    fn t2() -> Result<(), Box<dyn Error>> {
         let m = map_from_file("test2")?;
         print_state(&m);
         assert_eq!(136, search(&m));
@@ -292,7 +350,7 @@ mod test {
     }
 
     #[test]
-    fn t3() -> Result<(), Box<dyn Error>>{
+    fn t3() -> Result<(), Box<dyn Error>> {
         let m = map_from_file("test3")?;
         print_state(&m);
         assert_eq!(86, search(&m));
@@ -300,7 +358,7 @@ mod test {
     }
 
     #[test]
-    fn t4() -> Result<(), Box<dyn Error>>{
+    fn t4() -> Result<(), Box<dyn Error>> {
         let m = map_from_file("test4")?;
         print_state(&m);
         assert_eq!(81, search(&m));
@@ -308,7 +366,7 @@ mod test {
     }
 
     #[test]
-    fn qt1() -> Result<(), Box<dyn Error>>{
+    fn qt1() -> Result<(), Box<dyn Error>> {
         let m = map_from_file("qtest1")?;
         assert_eq!(8, qsearch(&m));
         Ok(())

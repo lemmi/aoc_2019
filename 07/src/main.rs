@@ -1,8 +1,8 @@
-use aoc2019::lines;
-use aoc2019::intcode::State;
 use aoc2019::intcode::Intcode;
-use std::str::FromStr;
+use aoc2019::intcode::State;
+use aoc2019::lines;
 use std::error::Error;
+use std::str::FromStr;
 
 use itertools::Itertools;
 
@@ -31,7 +31,10 @@ fn star2() -> Result<isize, Box<dyn Error>> {
 
     let mut max = 0;
     for phases in (5..=9).permutations(5) {
-        let mut amps = (0..5).into_iter().map(|_| Intcode::from_str(&code)).collect::<Result<Vec<_>,Box<dyn Error>>>()?;
+        let mut amps = (0..5)
+            .into_iter()
+            .map(|_| Intcode::from_str(&code))
+            .collect::<Result<Vec<_>, Box<dyn Error>>>()?;
 
         for (phase, amp) in phases.into_iter().zip(&mut amps) {
             assert_eq!(State::Wait(vec![]), amp.run_input(&[phase]));
@@ -39,14 +42,16 @@ fn star2() -> Result<isize, Box<dyn Error>> {
 
         let mut input = vec![0];
         let mut halted = 0;
-        while halted == 0{
+        while halted == 0 {
             for amp in &mut amps {
                 match amp.run_input(&input) {
-                    State::Wait(o) => {input = o;},
-                    State::Halt(o,_) => {
+                    State::Wait(o) => {
+                        input = o;
+                    }
+                    State::Halt(o, _) => {
                         input = o;
                         halted += 1;
-                    },
+                    }
                 }
             }
         }

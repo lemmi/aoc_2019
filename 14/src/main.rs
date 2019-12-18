@@ -123,7 +123,7 @@ fn star2() -> Result<isize, Box<dyn Error>> {
         f.need("FUEL", (cur + step) as usize);
         f.run();
         println!("{} + {} fuel need {} ore", cur, step, f.ore);
-        if f.ore > available && step == 1{
+        if f.ore > available && step == 1 {
             break;
         } else if f.ore > available {
             step /= 2;
