@@ -59,9 +59,6 @@ impl KeySet {
     fn contains(&self, k: Key) -> bool {
         (self.0 & 1<<k) > 0
     }
-    fn is_empty(&self) -> bool {
-        self.0 == 0
-    }
 }
 impl std::fmt::Display for KeySet {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -172,7 +169,9 @@ fn qsearch(m: &Map) -> usize {
         Pos{x: r.x + 1, y: r.y + 1},
     ];
 
-    //debug_state(&m, &r, &HashSet::new(), KeySet::default(), 0 );
+    if cfg!(test) {
+        debug_state(&m, &r, &HashSet::new(), KeySet::default(), 0 );
+    }
     qbfs(&m, r, KeySet::default(), goal, &mut HashMap::new())
 } 
 fn qbfs(m: &Map, mut froms: Vec<Pos>, keys: KeySet, goal: KeySet, cache: &mut HashMap<(Vec<Pos>, KeySet), usize>) -> usize {
