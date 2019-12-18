@@ -2,7 +2,6 @@ use aoc2019::{lcm, lines};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::error::Error;
-use std::hash::{Hash, Hasher};
 use std::ops::Add;
 use std::ops::Neg;
 use std::ops::Not;
@@ -104,17 +103,12 @@ impl FromStr for V3<isize> {
     }
 }
 
-#[derive(Eq, PartialEq, Debug, Clone, Copy)]
+#[derive(Eq, PartialEq, Debug, Clone, Copy, Hash)]
 struct Moon {
     p: V3<isize>,
     v: V3<isize>,
 }
 
-impl Hash for Moon {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.energy().hash(state);
-    }
-}
 impl Moon {
     fn apply_force(&self, other: &Self) -> V3<isize> {
         self.v + self.p.force(other.p)
@@ -157,7 +151,7 @@ fn parse_moons(filename: &str) -> Result<Vec<Moon>, Box<dyn Error>> {
     lines(filename)?
         .map(|l| {
             l.parse().map(|p| Moon {
-                p: p,
+                p,
                 v: V3::default(),
             })
         })
@@ -165,7 +159,7 @@ fn parse_moons(filename: &str) -> Result<Vec<Moon>, Box<dyn Error>> {
 }
 
 fn state_in_dim(moons: &[Moon], dim: usize) -> Vec<(isize, isize)> {
-    moons.into_iter().map(|m| m.dim(dim)).collect()
+    moons.iter().map(|m| m.dim(dim)).collect()
 }
 
 fn star1() -> Result<isize, Box<dyn Error>> {

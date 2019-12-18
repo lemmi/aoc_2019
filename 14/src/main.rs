@@ -17,11 +17,11 @@ impl FromStr for Substance {
         Ok(Substance {
             amount: si
                 .next()
-                .ok_or::<Box<dyn Error>>("Expected amount".into())?
+                .ok_or_else(|| "Expected amount".to_string())?
                 .parse()?,
             name: si
                 .next()
-                .ok_or::<Box<dyn Error>>("Expected name".into())?
+                .ok_or_else(|| "Expected name".to_string())?
                 .to_string(),
         })
     }
@@ -40,13 +40,13 @@ impl FromStr for Reaction {
         let mut si = s.split("=>");
         let reagents = si
             .next()
-            .ok_or::<Box<dyn Error>>("incomplete Reaction - no inputs".into())?
+            .ok_or_else(|| "incomplete Reaction - no inputs".to_string())?
             .split(',')
             .map(|r| r.parse::<Substance>())
             .collect::<Result<Vec<_>, _>>()?;
         let product = si
             .next()
-            .ok_or::<Box<dyn Error>>("incomplete reaction - no ouputs".into())?
+            .ok_or_else(|| "incomplete Reaction - no outputs".to_string())?
             .parse::<Substance>()?;
 
         Ok(Reaction { reagents, product })

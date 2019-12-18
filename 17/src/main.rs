@@ -11,7 +11,7 @@ fn scaffolding_from_file(f: &str) -> Result<Vec<Vec<char>>, Box<dyn Error>> {
         .collect();
     Ok(s.split(|&c| c == '\n')
         .map(|v| v.to_vec())
-        .filter(|v| v.len() != 0)
+        .filter(|v| !v.is_empty())
         .collect())
 }
 

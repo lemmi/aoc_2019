@@ -46,7 +46,7 @@ fn from_file(f: &str) -> Result<Vec<i32>, Box<dyn Error>> {
         .map(|c| {
             c.to_digit(10)
                 .map(|d| d as i32)
-                .ok_or("failed to parse digit".into())
+                .ok_or_else(|| "failed to parse digit".into())
         })
         .collect()
 }
@@ -64,8 +64,7 @@ fn star1() -> Result<i32, Box<dyn Error>> {
     let ps = patterns(v.len(), 0);
 
     let res = successors(Some(v), |v| Some(phase(v, &ps)))
-        .skip(100)
-        .next()
+        .nth(100)
         .unwrap()[..8]
         .to_vec();
     Ok(digits_to_num(&res))
@@ -101,8 +100,7 @@ fn star2() -> Result<i32, Box<dyn Error>> {
 
     let v: Vec<i32> = v.iter().cycle().take(l).skip(off).cloned().collect();
     let res = successors(Some(v), |v| Some(phase2(v)))
-        .skip(100)
-        .next()
+        .nth(100)
         .unwrap()[..8]
         .to_vec();
     Ok(digits_to_num(&res))

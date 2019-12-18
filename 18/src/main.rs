@@ -31,8 +31,8 @@ impl From<char> for Tile {
             '#' => Self::Wall,
             '.' => Self::Hall,
             '@' => Self::Robot,
-            x if x.is_ascii_lowercase() => Self::Key(x as u8 - 'a' as u8),
-            x if x.is_ascii_uppercase() => Self::Door(x as u8 - 'A' as u8),
+            x if x.is_ascii_lowercase() => Self::Key(x as u8 - b'a'),
+            x if x.is_ascii_uppercase() => Self::Door(x as u8 - b'A'),
             x => panic!("unkown tile {}", x),
         }
     }
@@ -48,11 +48,11 @@ impl std::fmt::Display for Tile {
                 Self::Hall => String::from("  "),
                 Self::Robot => String::from("@@"),
                 Self::Key(k) => {
-                    let c = k + 'a' as u8;
+                    let c = k + b'a';
                     String::from_utf8(vec![c, c]).unwrap()
                 }
                 Self::Door(d) => {
-                    let c = d + 'A' as u8;
+                    let c = d + b'A';
                     String::from_utf8(vec![c, c]).unwrap()
                 }
             }
@@ -63,10 +63,10 @@ impl std::fmt::Display for Tile {
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Default)]
 struct KeySet(u32);
 impl KeySet {
-    fn insert(&self, k: Key) -> KeySet {
+    fn insert(self, k: Key) -> KeySet {
         KeySet(self.0 | 1 << k)
     }
-    fn contains(&self, k: Key) -> bool {
+    fn contains(self, k: Key) -> bool {
         (self.0 & 1 << k) > 0
     }
 }
@@ -74,16 +74,12 @@ impl std::fmt::Display for KeySet {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         for s in 0..32 {
             if self.0 & 1 << s > 0 {
-                let c = (s + 'a' as u8) as char;
+                let c = (s + b'a') as char;
                 write!(f, "{}", c)?;
             }
         }
         write!(f, "")
     }
-}
-
-fn fmt_line(l: &[Tile]) -> String {
-    l.iter().map(|t| t.to_string()).collect()
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, PartialOrd, Ord)]
@@ -93,7 +89,7 @@ struct Pos {
 }
 
 impl Pos {
-    fn neighs(&self, m: &Map, k: KeySet) -> Vec<Pos> {
+    fn neighs(&self, m: &MapSlice, k: KeySet) -> Vec<Pos> {
         [
             Pos {
                 x: self.x - 1,
@@ -120,13 +116,14 @@ impl Pos {
 }
 
 type Map = Vec<Vec<Tile>>;
+type MapSlice = [Vec<Tile>];
 fn map_from_file(f: &str) -> Result<Map, Box<dyn Error>> {
     Ok(lines(f)?
-        .map(|l| l.chars().map(|c| Tile::from(c)).collect::<Vec<Tile>>())
+        .map(|l| l.chars().map(Tile::from).collect::<Vec<Tile>>())
         .collect::<Map>())
 }
 
-fn find_bot(m: &Map) -> Pos {
+fn find_bot(m: &MapSlice) -> Pos {
     for (y, l) in m.iter().enumerate() {
         if let Some(x) = l.iter().position(|t| *t == Tile::Robot) {
             return Pos { x, y };
@@ -135,13 +132,13 @@ fn find_bot(m: &Map) -> Pos {
     panic!("no bot found!")
 }
 
-fn search(m: &Map) -> usize {
+fn search(m: &MapSlice) -> usize {
     let r = find_bot(m);
     let goal = all_keys(m);
     bfs(m, r, KeySet::default(), goal, &mut HashMap::new())
 }
 fn bfs(
-    m: &Map,
+    m: &MapSlice,
     from: Pos,
     keys: KeySet,
     goal: KeySet,
@@ -184,8 +181,8 @@ fn bfs(
     ret
 }
 
-fn qsearch(m: &Map) -> usize {
-    let mut m = m.clone();
+fn qsearch(m: &MapSlice) -> usize {
+    let mut m = m.to_owned();
     let r = find_bot(&m);
     let goal = all_keys(&m);
 
@@ -220,7 +217,7 @@ fn qsearch(m: &Map) -> usize {
     qbfs(&m, r, KeySet::default(), goal, &mut HashMap::new())
 }
 fn qbfs(
-    m: &Map,
+    m: &MapSlice,
     mut froms: Vec<Pos>,
     keys: KeySet,
     goal: KeySet,
@@ -271,20 +268,14 @@ fn qbfs(
     ret
 }
 
-fn print_state(m: &Map) {
-    for l in m {
-        println!("{}", fmt_line(&l));
-    }
-}
-
-fn debug_state(m: &Map, r: &[Pos], v: &HashSet<Pos>, keys: KeySet, d: usize) {
+fn debug_state(m: &MapSlice, r: &[Pos], v: &HashSet<Pos>, keys: KeySet, d: usize) {
     for (y, l) in m.iter().enumerate() {
         for (x, t) in l.iter().enumerate() {
-            let p = Pos { x, y };
+            let pos = Pos { x, y };
 
-            if r.iter().any(|r| *r == p) {
+            if r.iter().any(|r| *r == pos) {
                 print!("{}", Tile::Robot);
-            } else if v.contains(&p) {
+            } else if v.contains(&pos) {
                 print!("░░");
             } else if *t == Tile::Robot {
                 print!("{}", Tile::Hall);
@@ -301,7 +292,7 @@ fn debug_state(m: &Map, r: &[Pos], v: &HashSet<Pos>, keys: KeySet, d: usize) {
     std::thread::sleep(std::time::Duration::from_millis(10));
 }
 
-fn all_keys(m: &Map) -> KeySet {
+fn all_keys(m: &MapSlice) -> KeySet {
     m.iter()
         .flat_map(|l| l.iter())
         .fold(KeySet::default(), |set, t| {
@@ -315,7 +306,6 @@ fn all_keys(m: &Map) -> KeySet {
 
 fn star1() -> Result<usize, Box<dyn Error>> {
     let m = map_from_file("input")?;
-    //print_state(&m);
     Ok(search(&m))
 }
 fn star2() -> Result<usize, Box<dyn Error>> {
@@ -332,6 +322,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    fn fmt_line(l: &[Tile]) -> String {
+        l.iter().map(|t| t.to_string()).collect()
+    }
+
+    fn print_state(m: &MapSlice) {
+        for l in m {
+            println!("{}", fmt_line(&l));
+        }
+    }
 
     #[test]
     fn t1() -> Result<(), Box<dyn Error>> {

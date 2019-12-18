@@ -20,7 +20,7 @@ pub struct Point<T> {
 
 impl<T> Point<T> {
     pub fn new(y: T, x: T) -> Self {
-        return Point { y, x };
+        Point { y, x }
     }
 }
 
@@ -100,7 +100,7 @@ pub mod intcode {
 
     impl Intcode {
         fn op(&self) -> (isize, isize, isize, isize) {
-            let op = self.mem[self.pc as usize + 0] as isize;
+            let op = self.mem[self.pc as usize] as isize;
             (op % 100, op / 100 % 10, op / 1000 % 10, op / 10000 % 10)
         }
         pub fn ind_mut(&mut self, off: isize) -> &mut isize {
@@ -202,7 +202,7 @@ pub mod intcode {
         }
         pub fn run_input(&mut self, input: &[isize]) -> State<Vec<isize>> {
             let mut out = Vec::new();
-            let mut in_iter = input.into_iter().cloned();
+            let mut in_iter = input.iter().cloned();
             loop {
                 match self.step(&mut in_iter) {
                     InstrState::Run => (),
@@ -226,14 +226,14 @@ pub mod intcode {
         pub fn from_file(f: &str) -> Result<Self, Box<dyn Error>> {
             super::lines(f)?
                 .next()
-                .ok_or("no code available".to_string())?
+                .ok_or_else(|| "no code available".to_string())?
                 .parse()
         }
     }
     impl FromStr for Intcode {
         type Err = Box<dyn Error>;
         fn from_str(src: &str) -> Result<Self, Self::Err> {
-            let mem: Result<Vec<isize>, _> = src.split(",").map(|n| n.parse()).collect();
+            let mem: Result<Vec<isize>, _> = src.split(',').map(|n| n.parse()).collect();
             Ok(Intcode {
                 mem: mem?,
                 pc: 0,

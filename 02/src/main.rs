@@ -13,7 +13,7 @@ fn star2() -> Result<isize, Box<dyn Error>> {
             let mut ic = lines("input")?.next().unwrap().parse::<Intcode>()?;
             ic.set(noun, verb);
             let res = ic.run()?;
-            if res == 19690720 {
+            if res == 19_690_720 {
                 return Ok(100 * noun + verb);
             }
         }

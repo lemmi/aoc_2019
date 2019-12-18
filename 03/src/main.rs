@@ -16,7 +16,7 @@ impl FromStr for Wire {
         let mut w = Wire::default();
         w.segments.push(Point::new(0, 0));
 
-        for v in s.split(",") {
+        for v in s.split(',') {
             let s: Box<dyn Iterator<Item = (_, _)>> = match (&v[..1], (&v[1..]).parse::<isize>()?) {
                 ("R", x) => Box::new((1..=x).map(|x| (0, x))),
                 ("L", x) => Box::new((1..=x).map(|x| (0, -x))),
@@ -75,7 +75,6 @@ fn star2() -> Result<isize, Box<dyn Error>> {
 
     let inters = k1.intersection(&k2);
     let (_, steps) = inters
-        .into_iter()
         .map(|p| (p, s1[p] + s2[p]))
         .min_by(|(_, x), (_, y)| x.cmp(y))
         .unwrap();

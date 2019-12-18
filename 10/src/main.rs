@@ -4,6 +4,7 @@ use std::error::Error;
 
 type Loc = (isize, isize);
 type Asteroids = Vec<Loc>;
+type AsteroidsSlice = [Loc];
 
 fn read_map(filename: &str) -> Result<Asteroids, Box<dyn Error>> {
     let mut v = Vec::new();
@@ -24,14 +25,14 @@ fn reduce((a, b): Loc) -> Loc {
     (a / div, b / div)
 }
 
-fn los(asteroids: &Asteroids, base: &Loc) -> HashMap<Loc, Asteroids> {
+fn los(asteroids: &AsteroidsSlice, base: &Loc) -> HashMap<Loc, Asteroids> {
     let mut alos = HashMap::new();
     asteroids
         .iter()
         .filter(|&a| a != base)
         .map(|a| (a.0 - base.0, a.1 - base.1))
         .map(|a| (reduce(a), a))
-        .for_each(|(r, b)| alos.entry(r).or_insert(Vec::new()).push(b));
+        .for_each(|(r, b)| alos.entry(r).or_insert_with(Vec::new).push(b));
 
     for val in alos.values_mut() {
         val.sort_by_key(|(x, y)| x * x + y * y)
@@ -40,9 +41,9 @@ fn los(asteroids: &Asteroids, base: &Loc) -> HashMap<Loc, Asteroids> {
     alos
 }
 
-fn find_best(asteroids: &Asteroids) -> (Loc, usize) {
+fn find_best(asteroids: &AsteroidsSlice) -> (Loc, usize) {
     asteroids
-        .into_iter()
+        .iter()
         .map(|b| (*b, los(&asteroids, b).len()))
         .max_by_key(|&(_, n)| n)
         .unwrap()
@@ -81,7 +82,7 @@ fn star2() -> Result<isize, Box<dyn Error>> {
             }
             //println!("{} {:?}: {:?}", angle(&k), k, v);
         }
-        alos.retain(|_, v| v.len() > 0);
+        alos.retain(|_, v| !v.is_empty())
     }
     let last = last.unwrap();
     let last = (last.0 + base.0, last.1 + base.1);

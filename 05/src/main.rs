@@ -7,7 +7,7 @@ fn star1() -> Result<isize, Box<dyn Error>> {
         .out()
         .last()
         .cloned()
-        .ok_or(Box::<dyn Error>::from("no output".to_owned()))
+        .ok_or_else(|| "no output".into())
 }
 fn star2() -> Result<isize, Box<dyn Error>> {
     let mut ic = lines("input")?.next().unwrap().parse::<Intcode>()?;
@@ -15,7 +15,7 @@ fn star2() -> Result<isize, Box<dyn Error>> {
         .out()
         .last()
         .cloned()
-        .ok_or(Box::<dyn Error>::from("no output".to_owned()))
+        .ok_or_else(|| "no output".into())
 }
 
 fn main() -> Result<(), Box<dyn Error>> {

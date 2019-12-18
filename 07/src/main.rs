@@ -32,7 +32,6 @@ fn star2() -> Result<isize, Box<dyn Error>> {
     let mut max = 0;
     for phases in (5..=9).permutations(5) {
         let mut amps = (0..5)
-            .into_iter()
             .map(|_| Intcode::from_str(&code))
             .collect::<Result<Vec<_>, Box<dyn Error>>>()?;
 

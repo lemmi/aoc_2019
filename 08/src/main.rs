@@ -1,4 +1,5 @@
 use aoc2019::lines;
+use bytecount;
 use std::error::Error;
 use std::str::FromStr;
 
@@ -11,7 +12,7 @@ impl FromStr for Image {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Image {
-            pix: s.chars().map(|c| c as u8 - '0' as u8).collect(),
+            pix: s.chars().map(|c| c as u8 - b'0').collect(),
         })
     }
 }
@@ -23,11 +24,11 @@ fn star1() -> Result<usize, Box<dyn Error>> {
     let layer = img
         .pix
         .chunks(ls)
-        .min_by_key(|l| l.into_iter().filter(|&&p| p == 0).count())
+        .min_by_key(|l| bytecount::count(l, 0))
         .unwrap();
 
-    let ones = layer.iter().filter(|&&p| p == 1).count();
-    let twos = layer.iter().filter(|&&p| p == 2).count();
+    let ones = bytecount::count(layer, 1);
+    let twos = bytecount::count(layer, 2);
 
     Ok(ones * twos)
 }

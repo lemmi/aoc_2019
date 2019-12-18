@@ -73,7 +73,7 @@ impl Robot {
         Ok(Robot {
             ic: Intcode::from_str(&lines(f)?.next().unwrap())?,
             path: Vec::new(),
-            map: map,
+            map,
         })
     }
     fn peek(&mut self, dir: isize) -> isize {
@@ -106,12 +106,12 @@ impl Robot {
         ret
     }
     fn follow_path(&mut self, path: &[isize]) {
-        for dir in path.into_iter() {
+        for dir in path {
             self.mv(*dir);
         }
     }
     fn follow_path_rev(&mut self, path: &[isize]) {
-        for dir in path.into_iter().rev() {
+        for dir in path.iter().rev() {
             self.back(*dir);
         }
     }
@@ -200,7 +200,7 @@ fn flood(mut m: HashSet<Loc>, start: Loc) -> usize {
     while let Some(l) = queue.pop_front() {
         dist = l.1;
         m.take(&l.0);
-        for neigh in (1..=4).into_iter().map(|n| l.0.dir(n)) {
+        for neigh in (1..=4).map(|n| l.0.dir(n)) {
             if m.contains(&neigh) {
                 queue.push_back((neigh, l.1 + 1));
             }

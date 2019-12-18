@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 aoc2019 = { path = "../aoc2019" }
+bytecount = "0.6.0"
