@@ -10,7 +10,7 @@ struct Wire {
 }
 
 impl FromStr for Wire {
-    type Err = Box<Error>;
+    type Err = Box<dyn Error>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut w = Wire::default();
@@ -33,7 +33,7 @@ impl FromStr for Wire {
     }
 }
 
-fn star1() -> Result<isize, Box<Error>> {
+fn star1() -> Result<isize, Box<dyn Error>> {
     let ws: Vec<_> = lines("input")?.map(|l| l.parse::<Wire>()).collect::<Result<_,_>>()?;
 
     let mut i = ws.into_iter().map(|w| w.segments.into_iter().skip(1).collect::<HashSet<_>>());
@@ -46,7 +46,7 @@ fn star1() -> Result<isize, Box<Error>> {
     Ok(nearest.unwrap().manhatten())
 }
 
-fn star2() -> Result<isize, Box<Error>> {
+fn star2() -> Result<isize, Box<dyn Error>> {
     let ws: Vec<_> = lines("input")?.map(|l| l.parse::<Wire>()).collect::<Result<_,_>>()?;
 
     let mut i = ws.into_iter().map(|w| w.segments.into_iter().enumerate().map(|(y,x)| (x,y)).skip(1).rev().collect::<HashMap<_,_>>());
@@ -63,7 +63,7 @@ fn star2() -> Result<isize, Box<Error>> {
     Ok(steps as isize)
 }
 
-fn main() -> Result<(), Box<Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     println!("star1: {}", star1()?);
     println!("star2: {}", star2()?);
     Ok(())

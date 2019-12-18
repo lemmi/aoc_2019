@@ -2,7 +2,7 @@ use std::error::Error;
 use std::collections::HashMap;
 use aoc2019::lines;
 
-fn parse_edge(l: String) -> Result<(String,String), Box<Error>> {
+fn parse_edge(l: String) -> Result<(String,String), Box<dyn Error>> {
     if let Some(p) = l.find(')') {
         Ok((l[p+1..].to_string(),l[..p].to_string()))
     } else {
@@ -37,20 +37,20 @@ fn transfer(e: &HashMap<String,String>, from: &str, to: &str) -> usize {
     p_you.len() + p_san.len() - 2*shared
 }
 
-fn read_edges(src: &str) -> Result<HashMap<String,String>,Box<Error>> {
+fn read_edges(src: &str) -> Result<HashMap<String,String>,Box<dyn Error>> {
     lines(src)?.map(parse_edge).collect::<Result<HashMap<_,_>,_>>()
 }
 
-fn star1() -> Result<usize,Box<Error>> {
+fn star1() -> Result<usize,Box<dyn Error>> {
     Ok(orbits(&read_edges("input")?))
 }
-fn star2() -> Result<usize,Box<Error>> {
+fn star2() -> Result<usize,Box<dyn Error>> {
     let e = read_edges("input")?;
 
     Ok(transfer(&e, "YOU", "SAN"))
 }
 
-fn main() -> Result<(),Box<Error>> {
+fn main() -> Result<(),Box<dyn Error>> {
     println!("Star 01: {}", star1()?);
     println!("Star 02: {}", star2()?);
     Ok(())
@@ -60,12 +60,12 @@ fn main() -> Result<(),Box<Error>> {
 mod test {
     use super::*;
     #[test]
-    fn count_orbits() -> Result<(),Box<Error>>{
+    fn count_orbits() -> Result<(),Box<dyn Error>>{
         assert_eq!(42,orbits(&read_edges("test")?));
         Ok(())
     }
     #[test]
-    fn transfer_orbits() -> Result<(),Box<Error>>{
+    fn transfer_orbits() -> Result<(),Box<dyn Error>>{
         assert_eq!(4,transfer(&read_edges("test2")?,"YOU","SAN"));
         Ok(())
     }

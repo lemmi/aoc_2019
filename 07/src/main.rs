@@ -6,7 +6,7 @@ use std::error::Error;
 
 use itertools::Itertools;
 
-fn star1() -> Result<isize, Box<Error>> {
+fn star1() -> Result<isize, Box<dyn Error>> {
     let code = lines("input")?.next().unwrap();
 
     let mut max = 0;
@@ -26,12 +26,12 @@ fn star1() -> Result<isize, Box<Error>> {
     Ok(max)
 }
 
-fn star2() -> Result<isize, Box<Error>> {
+fn star2() -> Result<isize, Box<dyn Error>> {
     let code = lines("input")?.next().unwrap();
 
     let mut max = 0;
     for phases in (5..=9).permutations(5) {
-        let mut amps = (0..5).into_iter().map(|_| Intcode::from_str(&code)).collect::<Result<Vec<_>,Box<Error>>>()?;
+        let mut amps = (0..5).into_iter().map(|_| Intcode::from_str(&code)).collect::<Result<Vec<_>,Box<dyn Error>>>()?;
 
         for (phase, amp) in phases.into_iter().zip(&mut amps) {
             assert_eq!(State::Wait(vec![]), amp.run_input(&[phase]));
@@ -56,7 +56,7 @@ fn star2() -> Result<isize, Box<Error>> {
     Ok(max)
 }
 
-fn main() -> Result<(), Box<Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     println!("Star 01: {}", star1()?);
     println!("Star 02: {}", star2()?);
     Ok(())

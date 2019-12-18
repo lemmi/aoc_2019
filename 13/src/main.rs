@@ -2,11 +2,11 @@ use aoc2019::{lines,intcode};
 use std::error::Error;
 use std::str::FromStr;
 
-fn star1() -> Result<usize, Box<Error>> {
+fn star1() -> Result<usize, Box<dyn Error>> {
     let mut ic = intcode::Intcode::from_str(&lines("input")?.next().unwrap())?;
     Ok(ic.run_input(&[]).out().chunks(3).filter(|t| t[2] == 2).count())
 }
-fn star2() -> Result<isize, Box<Error>> {
+fn star2() -> Result<isize, Box<dyn Error>> {
     let mut ic = intcode::Intcode::from_str(&lines("input")?.next().unwrap())?;
     *ic.mem(0)=2;
     
@@ -38,7 +38,7 @@ fn star2() -> Result<isize, Box<Error>> {
     Ok(display)
 }
 
-fn main() -> Result<(), Box<Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     println!("Star 01: {}", star1()?);
     println!("Star 02: {}", star2()?);
     Ok(())

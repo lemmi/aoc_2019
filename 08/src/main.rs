@@ -7,14 +7,14 @@ struct Image {
 }
 
 impl FromStr for Image {
-    type Err = Box<Error>;
+    type Err = Box<dyn Error>;
 
     fn from_str(s: &str) -> Result<Self,Self::Err> {
         Ok(Image{pix: s.chars().map(|c| c as u8 - '0' as u8).collect()})
     }
 }
 
-fn star1() -> Result<usize, Box<Error>> {
+fn star1() -> Result<usize, Box<dyn Error>> {
     let img = lines("input")?.next().unwrap().parse::<Image>()?;
     let ls = 25*6;
 
@@ -37,7 +37,7 @@ fn print_layer(l: &[u8]) {
     }
 }
 
-fn star2() -> Result<usize, Box<Error>> {
+fn star2() -> Result<usize, Box<dyn Error>> {
     let img = lines("input")?.next().unwrap().parse::<Image>()?;
     let ls = 25*6;
 
@@ -48,7 +48,7 @@ fn star2() -> Result<usize, Box<Error>> {
     Ok(0)
 }
 
-fn main() -> Result<(), Box<Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     println!("Star 01: {}", star1()?);
     println!("Star 02: {}", star2()?);
     Ok(())

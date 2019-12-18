@@ -5,7 +5,7 @@ use std::error::Error;
 type Loc = (isize, isize);
 type Asteroids = Vec<Loc>;
 
-fn read_map(filename: &str) -> Result<Asteroids, Box<Error>> {
+fn read_map(filename: &str) -> Result<Asteroids, Box<dyn Error>> {
     let mut v = Vec::new();
 
     for (y, l) in lines(filename)?.enumerate() {
@@ -55,14 +55,14 @@ fn angle(b: &Loc) -> f64 {
     (-x).atan2(y) + std::f64::consts::PI
 }
 
-fn star1() -> Result<usize, Box<Error>> {
+fn star1() -> Result<usize, Box<dyn Error>> {
     let asteroids = read_map("input")?;
     let (base, n) = find_best(&asteroids);
     println!("base at {:?} detects {} asteroids", base, n);
 
     Ok(n)
 }
-fn star2() -> Result<isize, Box<Error>> {
+fn star2() -> Result<isize, Box<dyn Error>> {
     let asteroids = read_map("input")?;
     let (base, _) = find_best(&asteroids);
     let mut alos = los(&asteroids, &base);
@@ -89,7 +89,7 @@ fn star2() -> Result<isize, Box<Error>> {
     Ok(last.0*100 + last.1)
 }
 
-fn main() -> Result<(), Box<Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     println!("Star 01: {}", star1()?);
     println!("Star 02: {}", star2()?);
     Ok(())
@@ -100,7 +100,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn testbest() -> Result<(), Box<Error>> {
+    fn testbest() -> Result<(), Box<dyn Error>> {
         assert_eq!(((5, 8), 33), find_best(&read_map("test01")?));
         assert_eq!(((1, 2), 35), find_best(&read_map("test02")?));
         Ok(())

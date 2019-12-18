@@ -90,7 +90,7 @@ impl V3<isize> {
 }
 
 impl FromStr for V3<isize> {
-    type Err = Box<Error>;
+    type Err = Box<dyn Error>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim().trim_start_matches('<').trim_end_matches('>');
@@ -153,7 +153,7 @@ fn total_energy(moons: &[Moon]) -> isize {
     moons.iter().map(Moon::energy).sum::<isize>()
 }
 
-fn parse_moons(filename: &str) -> Result<Vec<Moon>, Box<Error>> {
+fn parse_moons(filename: &str) -> Result<Vec<Moon>, Box<dyn Error>> {
     lines(filename)?
         .map(|l| {
             l.parse().map(|p| Moon {
@@ -168,7 +168,7 @@ fn state_in_dim(moons: &[Moon], dim: usize) -> Vec<(isize,isize)> {
     moons .into_iter() .map(|m| m.dim(dim)) .collect()
 }
 
-fn star1() -> Result<isize, Box<Error>> {
+fn star1() -> Result<isize, Box<dyn Error>> {
     let mut moons = parse_moons("input")?;
 
     for _ in 0..1000 {
@@ -191,7 +191,7 @@ fn find_period(moons: &[Moon], dim: usize) -> (isize, isize) {
     unreachable!()
 }
 
-fn star2() -> Result<isize, Box<Error>> {
+fn star2() -> Result<isize, Box<dyn Error>> {
     let moons = parse_moons("input")?;
 
     let px = find_period(&moons, 0);
@@ -205,7 +205,7 @@ fn star2() -> Result<isize, Box<Error>> {
     Ok(lcm(lcm(px.1,py.1), pz.1))
 }
 
-fn main() -> Result<(), Box<Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     println!("Star 01: {}", star1()?);
     println!("Star 02: {}", star2()?);
     Ok(())

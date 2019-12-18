@@ -39,7 +39,7 @@ struct Robot {
     ic: Intcode,
 }
 
-fn paint(code: &str, panel: isize) -> Result<HashMap<Vector<isize>,isize>,Box<Error>> {
+fn paint(code: &str, panel: isize) -> Result<HashMap<Vector<isize>,isize>,Box<dyn Error>> {
     let mut hull: HashMap<Vector<isize>,isize> = HashMap::new();
     let mut r = Robot{
         pos: Vector::new(0,0),
@@ -68,7 +68,7 @@ fn paint(code: &str, panel: isize) -> Result<HashMap<Vector<isize>,isize>,Box<Er
     Ok(hull)
 }
 
-fn star1() -> Result<usize, Box<Error>> {
+fn star1() -> Result<usize, Box<dyn Error>> {
     let code = lines("input")?.next().unwrap();
     Ok(paint(&code,0)?.len())
 }
@@ -91,7 +91,7 @@ where T: IntoIterator,
     (min,max + Vector::new(1,1))
 }
 
-fn star2() -> Result<isize, Box<Error>> {
+fn star2() -> Result<isize, Box<dyn Error>> {
     let code = lines("input")?.next().unwrap();
     let hull = paint(&code,1)?;
     let (bbmin,bbmax)=bb(hull.keys());
@@ -119,7 +119,7 @@ fn star2() -> Result<isize, Box<Error>> {
     Ok(0)
 }
 
-fn main() -> Result<(), Box<Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     println!("Star 01: {}", star1()?);
     println!("Star 02: {}", star2()?);
     Ok(())

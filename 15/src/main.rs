@@ -55,7 +55,7 @@ struct Robot {
 }
 
 impl Robot {
-    fn from_file(f: &str) -> Result<Self,Box<Error>> {
+    fn from_file(f: &str) -> Result<Self,Box<dyn Error>> {
         let mut map = Map::default();
         map.0.insert(Loc::default(), WayPoint::default());
         Ok(Robot{
@@ -166,7 +166,7 @@ impl Robot {
     }
 }
 
-fn star1() -> Result<usize, Box<Error>> {
+fn star1() -> Result<usize, Box<dyn Error>> {
     let mut r = Robot::from_file("input")?;
     let mut queue = VecDeque::new();
     queue.push_back(Loc::default());
@@ -197,7 +197,7 @@ fn flood(mut m: HashSet<Loc>, start: Loc) -> usize {
     dist
 }
 
-fn star2() -> Result<usize, Box<Error>> {
+fn star2() -> Result<usize, Box<dyn Error>> {
     let mut r = Robot::from_file("input")?;
     let mut queue = VecDeque::new();
     queue.push_back(Loc::default());
@@ -212,7 +212,7 @@ fn star2() -> Result<usize, Box<Error>> {
     Ok(flood(r.map.0.keys().cloned().collect(), oxyloc))
 }
 
-fn main() -> Result<(), Box<Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     println!("Star 01: {}", star1()?);
     println!("Star 02: {}", star2()?);
     Ok(())

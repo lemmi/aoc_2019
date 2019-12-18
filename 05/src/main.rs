@@ -1,16 +1,16 @@
 use std::error::Error;
 use aoc2019::{lines,intcode::Intcode};
 
-fn star1() -> Result<isize, Box<Error>> {
+fn star1() -> Result<isize, Box<dyn Error>> {
     let mut ic = lines("input")?.next().unwrap().parse::<Intcode>()?;
     ic.run_input(&[1]).out().last().cloned().ok_or(Box::<dyn Error>::from("no output".to_owned()))
 }
-fn star2() -> Result<isize, Box<Error>>{
+fn star2() -> Result<isize, Box<dyn Error>>{
     let mut ic = lines("input")?.next().unwrap().parse::<Intcode>()?;
     ic.run_input(&[5]).out().last().cloned().ok_or(Box::<dyn Error>::from("no output".to_owned()))
 }
 
-fn main() -> Result<(),Box<Error>>{
+fn main() -> Result<(),Box<dyn Error>>{
     println!("Star 01: {}", star1()?);
     println!("Star 02: {}", star2()?);
     Ok(())
@@ -22,7 +22,7 @@ mod test {
     use std::error::Error;
     use std::str::FromStr;
     #[test]
-    fn examples() -> Result<(), Box<Error>> {
+    fn examples() -> Result<(), Box<dyn Error>> {
         assert_eq!(9999, Intcode::from_str("3,0,4,0,99")?.run_input(&[9999]).out()[0]);
 
         assert_eq!(0, Intcode::from_str("3,9,8,9,10,9,4,9,99,-1,8")?.run_input(&[1]).out()[0]);

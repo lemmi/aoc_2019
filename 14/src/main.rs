@@ -10,18 +10,18 @@ struct Substance {
 }
 
 impl FromStr for Substance {
-    type Err = Box<Error>;
+    type Err = Box<dyn Error>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut si = s.trim().split_whitespace();
         Ok(Substance {
             amount: si
                 .next()
-                .ok_or::<Box<Error>>("Expected amount".into())?
+                .ok_or::<Box<dyn Error>>("Expected amount".into())?
                 .parse()?,
             name: si
                 .next()
-                .ok_or::<Box<Error>>("Expected name".into())?
+                .ok_or::<Box<dyn Error>>("Expected name".into())?
                 .to_string(),
         })
     }
@@ -34,19 +34,19 @@ struct Reaction {
 }
 
 impl FromStr for Reaction {
-    type Err = Box<Error>;
+    type Err = Box<dyn Error>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut si = s.split("=>");
         let reagents = si
             .next()
-            .ok_or::<Box<Error>>("incomplete Reaction - no inputs".into())?
+            .ok_or::<Box<dyn Error>>("incomplete Reaction - no inputs".into())?
             .split(',')
             .map(|r| r.parse::<Substance>())
             .collect::<Result<Vec<_>, _>>()?;
         let product = si
             .next()
-            .ok_or::<Box<Error>>("incomplete reaction - no ouputs".into())?
+            .ok_or::<Box<dyn Error>>("incomplete reaction - no ouputs".into())?
             .parse::<Substance>()?;
 
         Ok(Reaction { reagents, product })
@@ -62,7 +62,7 @@ struct Factory {
 }
 
 impl Factory {
-    fn from_file(f: &str) -> Result<Factory, Box<Error>> {
+    fn from_file(f: &str) -> Result<Factory, Box<dyn Error>> {
         Ok(Factory {
             reactions: lines(f)?
                 .map(|l| l.parse::<Reaction>())
@@ -106,14 +106,14 @@ impl Factory {
     }
 }
 
-fn star1() -> Result<usize, Box<Error>> {
+fn star1() -> Result<usize, Box<dyn Error>> {
     let mut f = Factory::from_file("input")?;
     f.need("FUEL", 1);
     f.run();
     Ok(f.ore)
 }
 
-fn star2() -> Result<isize, Box<Error>> {
+fn star2() -> Result<isize, Box<dyn Error>> {
     let available = 1_000_000_000_000usize;
     let mut cur = 1isize;
     let mut step = 1isize;
@@ -135,7 +135,7 @@ fn star2() -> Result<isize, Box<Error>> {
     Ok(cur)
 }
 
-fn main() -> Result<(), Box<Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     println!("Star 01: {}", star1()?);
     println!("Star 02: {}", star2()?);
     Ok(())
