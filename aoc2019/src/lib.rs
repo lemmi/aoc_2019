@@ -64,6 +64,7 @@ pub mod intcode {
     use std::error::Error;
     use std::str::FromStr;
 
+    #[derive(Clone)]
     pub struct Intcode {
         mem: Vec<isize>,
         pc: isize,
