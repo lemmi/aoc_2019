@@ -111,6 +111,9 @@ pub mod intcode {
         pub fn param_addr(&mut self, off: isize, mode: isize) -> usize {
             let immaddr = (self.pc + off) as usize;
             if immaddr >= self.mem.len() {
+                if immaddr >= self.mem.capacity() {
+                    self.mem.reserve(immaddr * 2);
+                }
                 self.mem.resize(immaddr + 1, 0);
             }
             let addr = match mode {
@@ -234,9 +237,10 @@ pub mod intcode {
     impl FromStr for Intcode {
         type Err = Box<dyn Error>;
         fn from_str(src: &str) -> Result<Self, Self::Err> {
-            let mem: Result<Vec<isize>, _> = src.split(',').map(|n| n.parse()).collect();
+            let mut mem: Vec<isize> = src.split(',').map(|n| n.parse()).collect::<Result<_,_>>()?;
+            mem.reserve(mem.len()*2);
             Ok(Intcode {
-                mem: mem?,
+                mem: mem,
                 pc: 0,
                 base: 0,
             })
